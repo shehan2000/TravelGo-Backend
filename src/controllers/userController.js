@@ -7,10 +7,41 @@ import generateToken from '../utils/generateToken.js';
  * /api/users/auth:
  *      post:
  *          summary: Authentication.
+ *          requestBody:
+ *              required: true
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: object
+ *                          properties:
+ *                              email:
+ *                                  type: string
+ *                                  description: Username
+ *                                  example: john@gmail.com
+ *                              password:
+ *                                  type: string
+ *                                  description: Relevant password for the account
+ *                                  example: john123
  *          responses:
- *              200:
- *                  description: Authenticated
+ *              201:
+ *                  description: User is authenticated.
+ *                  content:
+ *                      application/json:
+ *                          schema:
+ *                              type: object
+ *                              properties:
+ *                                  email:
+ *                                      type: string
+ *                                      description: Username
+ *                                      example: john@gmail.com
+ *                                  password:
+ *                                      type: string
+ *                                      description: Relevant password for the account
+ *                                      example: john123
+ *              400:
+ *                  description: Invalid Credentials.
  */
+
 const authUser = asyncHandler( async (req, res) => {
     
     const { email , password } = req.body;
@@ -23,7 +54,7 @@ const authUser = asyncHandler( async (req, res) => {
 
         res.status(201).json({
             userId: user.UserID,
-            usernmae: user.Username,
+            username: user.Username,
             firstname: user.FirstName,
         }) 
     } else {
@@ -57,7 +88,7 @@ const registerUser = asyncHandler( async (req, res) => {
         email: email,
         firstName: firstname,
         lastName: lastname,
-        password: passwordHash
+        passwordHash: passwordHash
     });
 
     if(user) {
