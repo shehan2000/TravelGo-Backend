@@ -7,8 +7,6 @@ const getStations = asyncHandler(async (req, res) => {
 
 const getSchedule = asyncHandler(async (req, res) => {
     const { sourceId, destinationId, date } = req.body;
-
-
     
     res.status(200).json(await getScheduleService( sourceId, destinationId, date ));
 });

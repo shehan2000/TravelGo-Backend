@@ -44,18 +44,6 @@ CREATE TABLE "TrainSchedule" (
     "DefaultTotalSeats" INTEGER
 );
 
-CREATE TABLE "Wagon" (
-    "WagonID" SERIAL PRIMARY KEY,
-    "Capacity" INTEGER,
-    "Class" VARCHAR(255),
-    "SeatNoScheme" TEXT[][],
-    "TotalSeats" INTEGER,
-    "Description" VARCHAR(255),
-    "HasTables" BOOLEAN DEFAULT false
-);
-
-
-
 CREATE TABLE "TrainStop" (
     "stopID" SERIAL PRIMARY KEY,
     "TrainNo" INTEGER REFERENCES "TrainSchedule"("TrainNo"),
@@ -66,31 +54,51 @@ CREATE TABLE "TrainStop" (
     "PlatformNo" INTEGER
 );
 
+CREATE TABLE "Wagon" (
+    "WagonID" SERIAL PRIMARY KEY,
+    "Capacity" INTEGER,
+    "Class" VARCHAR(255),
+    "SeatNoScheme" TEXT[][],
+    "Description" VARCHAR(255),
+    "HasTables" BOOLEAN DEFAULT false,
+    "Amenities" TEXT[]
+);
+
+
 CREATE TABLE "Train" (
-    "TrainID" INTEGER PRIMARY KEY,
+    "TrainID" SERIAL PRIMARY kEY,
     "TrainNo" INTEGER REFERENCES "TrainSchedule"("TrainNo"),
     "Date" DATE,
     "ChangedWagonsWithDirection" INTEGER[][]
 );
 
 
+
 CREATE TABLE "Booking" (
-    "BookingID" INTEGER PRIMARY KEY,
-    "userID" INTEGER REFERENCES "User"("UserID"),
-    "TrainID" INTEGER REFERENCES "TrainSchedule"("TrainNo"),
-    "isReturn" BOOLEAN,
+    "BookingID" SERIAL PRIMARY KEY,
+    "userID" UUID REFERENCES "User"("UserID"),
+    "TrainID" INTEGER REFERENCES "Train"("TrainID"),
+    "isReturn" BOOLEAN DEFAULT false,
     "Source" INTEGER REFERENCES "Station"("StationID"),
     "Destination" INTEGER REFERENCES "Station"("StationID"),
     "BookedTime" TIMESTAMP,
     "Amount" FLOAT,
-    "isPaid" BOOLEAN
+    "isPaid" BOOLEAN DEFAULT false
+);
+
+CREATE TABLE "SeatBooking" (
+    "SeatBookingID" SERIAL PRIMARY KEY,
+    "BookingID" INTEGER REFERENCES "Booking"("BookingID"),
+    "WagonPosition" INTEGER,
+    "WagonID" INTEGER REFERENCES "Wagon"("WagonID"),
+    "SeatNo" INTEGER
 );
 
 CREATE TABLE "Passenger" (
     "PassengerID" INTEGER REFERENCES "SeatBooking"("SeatBookingID"),
     "NIC" VARCHAR(20),
     "Name" VARCHAR(255),
-    "Gender" VARCHAR(10),
+    "IsMale" BOOLEAN,
     "Age" INTEGER,
     PRIMARY KEY ("PassengerID")
 );
@@ -99,6 +107,6 @@ CREATE TABLE "Payments" (
     "PaymentID" INTEGER PRIMARY KEY,
     "BookingID" INTEGER REFERENCES "Booking"("BookingID"),
     "Timestamp" TIMESTAMP,
-    "isSuccess" BOOLEAN,
+    "isSuccess" BOOLEAN DEFAULT false,
     "Response" VARCHAR(255)
 );

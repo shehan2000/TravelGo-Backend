@@ -6,11 +6,11 @@ const getStationsService = async () => {
     );
 }
 
-const getScheduleService = async ( sourceID, destID, day ) => {
+const getScheduleService = async (sourceID, destID, day) => {
     const dayString = '"' + day + '"';
     console.log(dayString);
 
-    var query =  `SELECT
+    var query = `SELECT
     ts."TrainNo",
     ts."TrainName",
     ts."ArrivalTime",
@@ -52,7 +52,7 @@ ORDER BY
     ts."TrainNo";`
 
     return await DbHandler.executeSingleQuery(
-       query
+        query
     )
 }
 

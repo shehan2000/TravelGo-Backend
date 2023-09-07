@@ -97,8 +97,6 @@ INSERT INTO "Frequency" ("Name", "Monday", "Tuesday", "Wednesday", "Thursday",
 VALUES ('Weekends Only', true, true);
 
 
-
-
  -- TrainStop table
 
 INSERT INTO "TrainStop" ("TrainNo", "StationID", "ArrivalTime", "DepartureTime", "Load", "PlatformNo")
@@ -113,3 +111,47 @@ VALUES
     (8716, 323, '10:20:00', '10:25:00', 10, 3),
     (8716, 129, '10:40:00', '10:45:00', 4, 2),
     (8716, 235, '11:00:00', '11:05:00', 1, 1);
+
+-- Wagon table
+
+INSERT INTO "Wagon" ("Capacity", "Class", "SeatNoScheme", "Description", "HasTables", "Amenities")
+VALUES (60, 'Third Class', 
+    '{{"d","","","","d"},
+      {"xw","xf","xf","xm","xw"},
+      {"xw","xf","xf","xm","xw"},
+      {"yw","yf","yf","ym","yw"},
+      {"yw","yf","yf","ym","yw"},
+      {"xw","xf","xf","xm","xw"},
+      {"xw","xf","xf","xm","xw"},
+      {"yw","yf","yf","ym","yw"},
+      {"yw","yf","yf","ym","yw"},
+      {"xw","xf","xf","xm","xw"},
+      {"xw","xf","xf","xm","xw"},
+      {"yw","yf","yf","ym","yw"},
+      {"yw","yf","yf","ym","yw"},
+      {"s","","","","t"}}', 
+    'Standard Economy Wagon', 
+    false, 
+    '{"Ceiling Fans", "Reading Lights"}');
+
+
+INSERT INTO "Wagon" ("Capacity", "Class", "SeatNoScheme", "Description", "HasTables", "Amenities")
+VALUES (40, 'Second Class', 
+    '{{"d","","","d"},
+      {"w","f","f","w"},
+      {"w","f","f","w"},
+      {"w","f","f","w"},
+      {"w","f","f","w"},
+      {"w","f","f","w"},
+      {"w","f","f","w"},
+      {"w","f","f","w"},
+      {"w","f","f","w"},
+      {"w","f","f","w"},
+      {"w","f","f","w"},
+      {"s","","","t"}}', 
+    'Standard Second Class Wagon', 
+    false, 
+    '{"Ceiling Fans", "Reading Lights", "Folding table", "Cup holder"}');
+
+
+
