@@ -18,6 +18,32 @@ CREATE TABLE "Station" (
     "StationName" VARCHAR(255) NOT NULL
 );
 
+CREATE TABLE "Frequency" (
+    "FrequencyID" SERIAL PRIMARY KEY,
+    "Name" VARCHAR(255),
+    "Monday" BOOLEAN DEFAULT false,
+    "Tuesday" BOOLEAN DEFAULT false,
+    "Wednesday" BOOLEAN DEFAULT false,
+    "Thursday" BOOLEAN DEFAULT false,
+    "Friday" BOOLEAN DEFAULT false,
+    "Saturday" BOOLEAN DEFAULT false,
+    "Sunday" BOOLEAN DEFAULT false
+);
+
+CREATE TABLE "TrainSchedule" (
+    "TrainNo" INTEGER PRIMARY KEY,
+    "TrainName" VARCHAR(255),
+    "Source" INTEGER REFERENCES "Station"("StationID"),
+    "Destination" INTEGER REFERENCES "Station"("StationID"),
+    "ArrivalTime" TIME,
+    "DepartureTime" TIME,
+    "TrainType" VARCHAR(255),
+    "Frequency" INTEGER REFERENCES "Frequency"("FrequencyID"),
+    "DefaultWagonsWithDirection" INTEGER[][],
+    "InvertedStations" INTEGER[],
+    "DefaultTotalSeats" INTEGER
+);
+
 CREATE TABLE "Wagon" (
     "WagonID" SERIAL PRIMARY KEY,
     "Capacity" INTEGER,
@@ -28,26 +54,14 @@ CREATE TABLE "Wagon" (
     "HasTables" BOOLEAN DEFAULT false
 );
 
-CREATE TABLE "TrainSchedule" (
-    "TrainNo" INTEGER PRIMARY KEY,
-    "TrainName" VARCHAR(255),
-    "Source" INTEGER REFERENCES "Station"("StationID"),
-    "Destination" INTEGER REFERENCES "Station"("StationID"),
-    "ArrivalTime" TIMESTAMP,
-    "DepartureTime" TIMESTAMP,
-    "TrainType" VARCHAR(255),
-    "Frequency" INTEGER REFERENCES "Frequency"("FrequencyID"),
-    "DefaultWagonsWithDirection" INTEGER[][],
-    "InvertedStations" INTEGER[],
-    "DefaultTotalSeats" INTEGER
-);
+
 
 CREATE TABLE "TrainStop" (
-    "stopID" INTEGER PRIMARY KEY,
+    "stopID" SERIAL PRIMARY KEY,
     "TrainNo" INTEGER REFERENCES "TrainSchedule"("TrainNo"),
     "StationID" INTEGER REFERENCES "Station"("StationID"),
-    "ArrivalTime" TIMESTAMP,
-    "DepartureTime" TIMESTAMP,
+    "ArrivalTime" TIME,
+    "DepartureTime" TIME,
     "Load" INTEGER,
     "PlatformNo" INTEGER
 );
@@ -59,17 +73,6 @@ CREATE TABLE "Train" (
     "ChangedWagonsWithDirection" INTEGER[][]
 );
 
-CREATE TABLE "Frequency" (
-    "FrequencyID" INTEGER PRIMARY KEY,
-    "Name" VARCHAR(255),
-    "Monday" BOOLEAN,
-    "Tuesday" BOOLEAN,
-    "Wednesday" BOOLEAN,
-    "Thursday" BOOLEAN,
-    "Friday" BOOLEAN,
-    "Saturday" BOOLEAN,
-    "Sunday" BOOLEAN
-);
 
 CREATE TABLE "Booking" (
     "BookingID" INTEGER PRIMARY KEY,
