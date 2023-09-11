@@ -21,10 +21,13 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(cookieParser());
 
+// Cross origin requests
 app.use(cors({
     origin: "http://localhost:5173",
+    origin: "http://localhost:3000"
 }))
 
+// Routes
 app.use('/api/users', userRoutes);
 app.use('/api/trains', trainRoutes);
 
@@ -35,6 +38,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.get('/', (req, res) => res.send('server is ready'));
 
+//Exception Handling
 app.use(notFound);
 app.use(errorHandler);
 
