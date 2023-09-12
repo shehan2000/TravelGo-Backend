@@ -110,3 +110,14 @@ CREATE TABLE "Payments" (
     "isSuccess" BOOLEAN DEFAULT false,
     "Response" VARCHAR(255)
 );
+
+
+--Admin tables
+
+CREATE TABLE "AdminUser" (
+    "UserID" UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+    "Username" VARCHAR(255),
+    "FirstName" VARCHAR(255),
+    "LastName" VARCHAR(255),
+    "PasswordHash" VARCHAR(255),
+);
