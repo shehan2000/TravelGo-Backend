@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 
 import userRoutes from './routes/userRoutes.js';
 import trainRoutes from './routes/trainRoutes.js';
+import adminUserRoutes from './routes/adminUserRoutes.js';
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 import cors from "cors";
 import swaggerUi from 'swagger-ui-express';
@@ -22,14 +23,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Cross origin requests
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:3000"
+]
 app.use(cors({
-    origin: "http://localhost:5173",
-    origin: "http://localhost:3000"
+    origin: allowedOrigins
 }))
 
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/trains', trainRoutes);
+app.use('/api/admin', adminUserRoutes);
 
 // Implementing swagger UI
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));

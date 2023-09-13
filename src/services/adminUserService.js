@@ -1,4 +1,4 @@
-import DbHandler from "../database/dbHandler";
+import DbHandler from "../database/dbHandler.js";
 
 const getAdminByEmail = async (email) => {
     return await DbHandler.executeSingleQuery(

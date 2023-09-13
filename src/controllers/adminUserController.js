@@ -1,11 +1,13 @@
 import AsyncHandler from "express-async-handler";
-import generateToken from "../utils/generateToken";
-import { getAdminByEmail } from "../services/adminUserService";
-import { comparePasswordHash, generatePasswordHash } from "../services/userService";
+import generateToken from "../utils/generateToken.js";
+import { getAdminByEmail, insertAdmin } from "../services/adminUserService.js";
+import { comparePasswordHash, generatePasswordHash } from "../services/userService.js";
 
 const authAdmin = AsyncHandler( async (req, res) => {
     const { email, password } = req.body;
+    console.log("🚀 ~ file: adminUserController.js:8 ~ authAdmin ~ email, password:", email, password)
 
+    
     var admin = await getAdminByEmail(email);
     admin = admin[0];
 
@@ -27,8 +29,9 @@ const registerAdmin = AsyncHandler( async (req, res) => {
     const { firstname, lastname, email, password } = req.body;
 
     const adminExists = await getAdminByEmail(email);
+    console.log("🚀 ~ file: adminUserController.js:30 ~ registerAdmin ~ adminExists:", adminExists)
 
-    if (adminExists) {
+    if (adminExists.length) {
         res.status(400);
         throw new Error('User already exists');
     }
@@ -46,12 +49,23 @@ const registerAdmin = AsyncHandler( async (req, res) => {
         admin = admin[0];
         res.status(201).json({
             message: "Admin created successfully",
-            userId: user.UserID,
+            userId: admin.UserID,
         })
     } else {
         res.status(400);
         throw new Error('Invalid user data');
     }
+});
+
+const logoutAdmin = AsyncHandler( async (req, res) => {
+    res.cookie('jwt', '', {
+        httpOnly: true,
+        expires: new Date(0)
+    })
+
+    res.status(200).json({ message: 'User logged out' })
 })
 
-export { authAdmin };
+
+
+export { authAdmin, registerAdmin, logoutAdmin };
