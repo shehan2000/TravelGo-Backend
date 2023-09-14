@@ -9,11 +9,12 @@ import {
   getBookingAggregateDataByMonth,
   getBookingAggregateDataByDay,
 } from "../controllers/trainController.js";
+import { protect } from '../middleware/authMiddleware.js';
 
 router.get("/stations", getStations);
 router.post("/schedule", getSchedule);
 
-router.get("/admin/schedule", getAllSchedule);
+router.route("/admin/schedule").get(protect, getSchedule);
 router.get("/admin/train-stations", getTrainStops);
 router.get("/admin/wagon-types", getWagonTypes);
 router.get(
