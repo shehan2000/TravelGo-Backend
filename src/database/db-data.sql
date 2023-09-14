@@ -78,15 +78,6 @@ INSERT INTO "Station" ("StationName") VALUES ('ABANPOLA'), ('ADAGALA'), ('AGBOPU
 ('YATAGAMA'), ('YATAWARA'), ('YATIRAWANA'), ('YATTALGODA');
 
 
--- Frequency table
-
-INSERT INTO "Frequency" ("Name", "Monday", "Tuesday", "Wednesday", "Thursday",
- "Friday") VALUES ('Weekdays', TRUE, TRUE, TRUE, TRUE, TRUE);
-
- INSERT INTO "Frequency" ("Name", "Saturday", "Sunday")
-VALUES ('Weekends Only', true, true);
-
-
 -- TrainSchedule table
 
 INSERT INTO "TrainSchedule" ("TrainNo", "TrainName", "Source", "Destination", "ArrivalTime", "DepartureTime", "TrainType", "Frequency", "DefaultWagonsWithDirection", "InvertedStations", "DefaultTotalSeats")
@@ -122,7 +113,13 @@ VALUES
 
 
 
+-- Frequency table
 
+INSERT INTO "Frequency" ("Name", "Monday", "Tuesday", "Wednesday", "Thursday",
+ "Friday") VALUES ('Weekdays', TRUE, TRUE, TRUE, TRUE, TRUE);
+
+ INSERT INTO "Frequency" ("Name", "Saturday", "Sunday")
+VALUES ('Weekends Only', true, true);
 
 
  -- TrainStop table

@@ -119,5 +119,5 @@ CREATE TABLE "AdminUser" (
     "Username" VARCHAR(255),
     "FirstName" VARCHAR(255),
     "LastName" VARCHAR(255),
-    "PasswordHash" VARCHAR(255)
+    "PasswordHash" VARCHAR(255),
 );
