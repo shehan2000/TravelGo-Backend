@@ -49,7 +49,7 @@ const authUser = asyncHandler( async (req, res) => {
     var user = await getUserByEmail(email); 
     user = user[0];
 
-    if(user && (await comparePasswordHash(password, user.PasswordHash))) {
+    if(user && password !== undefined && (await comparePasswordHash(password, user.PasswordHash))) {
         generateToken(res, user.Username);
 
         res.status(201).json({
