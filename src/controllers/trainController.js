@@ -8,6 +8,7 @@ import {
   getWagonTypesService,
   getBookingAggregateDataByMonthService,
   getBookingAggregateDataByDayService,
+  getTrainFrequencyService,
 } from "../services/trainService.js";
 
 const getStations = asyncHandler(async (req, res) => {
@@ -55,4 +56,8 @@ const getBookingAggregateDataByMonth = asyncHandler( async (req, res) => {
 const getBookingAggregateDataByDay = asyncHandler( async (req, res) => {
   res.status(200).json(await getBookingAggregateDataByDayService());
 })
-export { getStations, getSchedule, getAllSchedule, getTrainStops, getWagonTypes, getBookingAggregateDataByMonth, getBookingAggregateDataByDay };
+
+const getTrainFrequency = asyncHandler( async (req, res) => {
+  res.status(200).json(await getTrainFrequencyService());
+})
+export { getStations, getSchedule, getAllSchedule, getTrainStops, getWagonTypes, getBookingAggregateDataByMonth, getBookingAggregateDataByDay, getTrainFrequency };

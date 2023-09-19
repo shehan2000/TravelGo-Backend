@@ -149,6 +149,12 @@ const getBookingAggregateDataByDayService = async () => {
   )
 }
 
+const getTrainFrequencyService = async () => {
+  return await DbHandler.executeSingleQuery(
+    `SELECT "Name", "FrequencyID" from "Frequency";`
+  )
+}
+
 export {
   getStationsService,
   getScheduleService,
@@ -158,4 +164,5 @@ export {
   getWagonTypesService,
   getBookingAggregateDataByMonthService,
   getBookingAggregateDataByDayService,
+  getTrainFrequencyService,
 };
