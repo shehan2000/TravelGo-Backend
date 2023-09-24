@@ -57,14 +57,17 @@ const getAllScheduleService = async () => {
 };
 
 const getTrainStopsService = async (page, pageSize, sort, search) => {
-  console.log("🚀 ~ file: trainService.js:60 ~ getTrainStopsService ~ search:", search)
+  console.log(
+    "🚀 ~ file: trainService.js:60 ~ getTrainStopsService ~ search:",
+    search
+  );
   let sql = `SELECT * FROM "TrainStop" `;
 
-    if (search) {
-        sql += `WHERE
+  if (search) {
+    sql += `WHERE
                     CAST("stopID" AS TEXT) LIKE '%${search}%'
-                    OR CAST("TrainNo" AS TEXT) LIKE '%${search}%'`
-    }
+                    OR CAST("TrainNo" AS TEXT) LIKE '%${search}%'`;
+  }
 
   if (sort.length > 2) {
     const sortParsed = JSON.parse(sort);
@@ -96,7 +99,7 @@ const getWagonTypesService = async () => {
   return await DbHandler.executeSingleQuery(
     'SELECT "WagonID", "Capacity", "Class" FROM "Wagon";'
   );
-}
+};
 
 const getBookingAggregateDataByMonthService = async () => {
   return await DbHandler.executeSingleQuery(
@@ -122,7 +125,7 @@ const getBookingAggregateDataByMonthService = async () => {
   FROM
       MonthlyData`
   );
-}
+};
 
 const getBookingAggregateDataByDayService = async () => {
   return await DbHandler.executeSingleQuery(
@@ -146,14 +149,58 @@ const getBookingAggregateDataByDayService = async () => {
       ) AS "daily_data"
   FROM
       DailyData`
-  )
-}
+  );
+};
 
 const getTrainFrequencyService = async () => {
   return await DbHandler.executeSingleQuery(
     `SELECT "Name", "FrequencyID" from "Frequency";`
-  )
+  );
+};
+
+const createTrainScheduleService = async (
+  trainNo,
+  trainName,
+  source,
+  dest,
+  arrivalTime,
+  departureTime,
+  trainType,
+  frequency,
+  defaultWagonsWithDirection,
+  invertedStations
+) => {
+  console.log("🚀 ~ file: trainService.js:173 ~ defaultWagonsWithDirection:", defaultWagonsWithDirection)
+  // Convert the defaultWagonsWithDirection array to a PostgreSQL array format
+  const defaultWagonsArray = defaultWagonsWithDirection.map((item) => `{${item.join(',')}}`).join(',');
+
+  var query = `INSERT INTO "TrainSchedule" ("TrainNo", "TrainName", "Source", "Destination", "ArrivalTime", "DepartureTime", 
+              "TrainType", "Frequency", "DefaultWagonsWithDirection", "InvertedStations") 
+              VALUES (${trainNo}, '${trainName}', ${source}, ${dest}, '${getTimeFormat(arrivalTime)}', '${getTimeFormat(departureTime)}',
+               '${trainType}', ${frequency},'{${defaultWagonsArray}}', '{${invertedStations}}') returning*`;
+
+  console.log("train schedule create query: ", query);
+
+  return await DbHandler.executeSingleQuery(query);
+};
+
+const getTimeFormat = (dateInput) => {
+  //making arrivalTime and departureTime into usable format for DB
+  const dateConverted = new Date(dateInput);
+
+  // Extract the hours, minutes, and seconds from the Date object
+  const hours = dateConverted.getHours();
+  const minutes = dateConverted.getMinutes();
+  const seconds = dateConverted.getSeconds();
+
+  // Format the time as "HH:MM:SS" string
+  const formattedArrivalTime = `${hours.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+
+    return formattedArrivalTime;
 }
+
 
 export {
   getStationsService,
@@ -165,4 +212,5 @@ export {
   getBookingAggregateDataByMonthService,
   getBookingAggregateDataByDayService,
   getTrainFrequencyService,
+  createTrainScheduleService,
 };

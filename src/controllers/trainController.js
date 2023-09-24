@@ -9,6 +9,7 @@ import {
   getBookingAggregateDataByMonthService,
   getBookingAggregateDataByDayService,
   getTrainFrequencyService,
+  createTrainScheduleService,
 } from "../services/trainService.js";
 
 const getStations = asyncHandler(async (req, res) => {
@@ -39,25 +40,67 @@ const getTrainStops = asyncHandler(async (req, res) => {
   );
 
   const trainstops = await getTrainStopsService(page, pageSize, sort, search);
-  const totalRes = await getTrainStopsTotalService()
+  const totalRes = await getTrainStopsTotalService();
   const total = parseInt(totalRes[0].count);
-  
+
   res.status(200).json({ trainstops, total });
 });
 
-const getWagonTypes = asyncHandler( async (req, res) => {
+const getWagonTypes = asyncHandler(async (req, res) => {
   res.status(200).json(await getWagonTypesService());
-})
+});
 
-const getBookingAggregateDataByMonth = asyncHandler( async (req, res) => {
+const getBookingAggregateDataByMonth = asyncHandler(async (req, res) => {
   res.status(200).json(await getBookingAggregateDataByMonthService());
-})
+});
 
-const getBookingAggregateDataByDay = asyncHandler( async (req, res) => {
+const getBookingAggregateDataByDay = asyncHandler(async (req, res) => {
   res.status(200).json(await getBookingAggregateDataByDayService());
-})
+});
 
-const getTrainFrequency = asyncHandler( async (req, res) => {
+const getTrainFrequency = asyncHandler(async (req, res) => {
   res.status(200).json(await getTrainFrequencyService());
-})
-export { getStations, getSchedule, getAllSchedule, getTrainStops, getWagonTypes, getBookingAggregateDataByMonth, getBookingAggregateDataByDay, getTrainFrequency };
+});
+
+const createTrainSchedule = asyncHandler(async (req, res) => {
+  const {
+    trainNo,
+    trainName,
+    source,
+    dest,
+    arrivalTime,
+    departureTime,
+    trainType,
+    frequency,
+    defaultWagonsWithDirection,
+    invertedStations,
+  } = req.body;
+  
+  res
+    .status(200)
+    .json(
+      await createTrainScheduleService(
+        trainNo,
+        trainName,
+        source,
+        dest,
+        arrivalTime,
+        departureTime,
+        trainType,
+        frequency,
+        defaultWagonsWithDirection,
+        invertedStations
+      )
+    );
+});
+export {
+  getStations,
+  getSchedule,
+  getAllSchedule,
+  getTrainStops,
+  getWagonTypes,
+  getBookingAggregateDataByMonth,
+  getBookingAggregateDataByDay,
+  getTrainFrequency,
+  createTrainSchedule,
+};

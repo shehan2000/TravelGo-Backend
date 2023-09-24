@@ -9,6 +9,7 @@ import {
   getBookingAggregateDataByMonth,
   getBookingAggregateDataByDay,
   getTrainFrequency,
+  createTrainSchedule,
 } from "../controllers/trainController.js";
 
 router.get("/stations", getStations);
@@ -23,5 +24,7 @@ router.get(
 );
 router.get("/admin/aggregated-booking-data-day", getBookingAggregateDataByDay)
 router.get("/admin/train-frequency", getTrainFrequency);
+
+router.post("/admin/create-train-schedule", createTrainSchedule);
 
 export default router;
