@@ -8,6 +8,11 @@ import {
   getWagonTypesService,
   getBookingAggregateDataByMonthService,
   getBookingAggregateDataByDayService,
+  getTrainFrequencyService,
+  createTrainScheduleService,
+  getStatBoxDataService,
+  deleteTrainScheduleService,
+  createWagonService,
 } from "../services/trainService.js";
 
 const getStations = asyncHandler(async (req, res) => {
@@ -38,21 +43,106 @@ const getTrainStops = asyncHandler(async (req, res) => {
   );
 
   const trainstops = await getTrainStopsService(page, pageSize, sort, search);
-  const totalRes = await getTrainStopsTotalService()
+  const totalRes = await getTrainStopsTotalService();
   const total = parseInt(totalRes[0].count);
-  
+
   res.status(200).json({ trainstops, total });
 });
 
-const getWagonTypes = asyncHandler( async (req, res) => {
+const getWagonTypes = asyncHandler(async (req, res) => {
   res.status(200).json(await getWagonTypesService());
-})
+});
 
-const getBookingAggregateDataByMonth = asyncHandler( async (req, res) => {
+const getBookingAggregateDataByMonth = asyncHandler(async (req, res) => {
   res.status(200).json(await getBookingAggregateDataByMonthService());
+});
+
+const getBookingAggregateDataByDay = asyncHandler(async (req, res) => {
+  res.status(200).json(await getBookingAggregateDataByDayService());
+});
+
+const getTrainFrequency = asyncHandler(async (req, res) => {
+  res.status(200).json(await getTrainFrequencyService());
+});
+
+const createTrainSchedule = asyncHandler(async (req, res) => {
+  const {
+    trainNo,
+    trainName,
+    source,
+    dest,
+    arrivalTime,
+    departureTime,
+    trainType,
+    frequency,
+    defaultWagonsWithDirection,
+    invertedStations,
+  } = req.body;
+  
+  res
+    .status(200)
+    .json(
+      await createTrainScheduleService(
+        trainNo,
+        trainName,
+        source,
+        dest,
+        arrivalTime,
+        departureTime,
+        trainType,
+        frequency,
+        defaultWagonsWithDirection,
+        invertedStations
+      )
+    );
+});
+
+const getStatBoxData = asyncHandler( async (req, res) => {
+  res.status(200).json(
+    await getStatBoxDataService()
+  )
+});
+
+const deleteTrainSchedule = asyncHandler( async (req, res) => {
+  const TrainNo = req.query.TrainNo;
+  console.log("🚀 ~ file: trainController.js:107 ~ deleteTrainSchedule ~ TrainNo:", TrainNo)
+  res.status(200).json(
+    await deleteTrainScheduleService(TrainNo)
+  )
 })
 
-const getBookingAggregateDataByDay = asyncHandler( async (req, res) => {
-  res.status(200).json(await getBookingAggregateDataByDayService());
+const createWagon = asyncHandler ( async (req, res) => {
+  const {
+    Capacity,
+    Class,
+    SeatNoScheme,
+    Description,
+    HasTables,
+    Amenities
+  } = req.body;
+
+  res.status(200).json(
+    await createWagonService(
+      Capacity,
+      Class,
+      SeatNoScheme,
+      Description,
+      HasTables,
+      Amenities
+    )
+  )
 })
-export { getStations, getSchedule, getAllSchedule, getTrainStops, getWagonTypes, getBookingAggregateDataByMonth, getBookingAggregateDataByDay };
+export {
+  getStations,
+  getSchedule,
+  getAllSchedule,
+  getTrainStops,
+  getWagonTypes,
+  getBookingAggregateDataByMonth,
+  getBookingAggregateDataByDay,
+  getTrainFrequency,
+  createTrainSchedule,
+  getStatBoxData,
+  deleteTrainSchedule,
+  createWagon,
+};

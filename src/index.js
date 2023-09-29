@@ -5,10 +5,13 @@ import cookieParser from "cookie-parser";
 import userRoutes from './routes/userRoutes.js';
 import trainRoutes from './routes/trainRoutes.js';
 import adminUserRoutes from './routes/adminUserRoutes.js';
+import bookingRoutes from './routes/bookingRoute.js'
+
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 import cors from "cors";
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocs from "./utils/swagger.js";
+
 
 
 
@@ -35,6 +38,8 @@ app.use(cors({
 app.use('/api/users', userRoutes);
 app.use('/api/trains', trainRoutes);
 app.use('/api/admin', adminUserRoutes);
+app.use('/api/booking', bookingRoutes)
+
 
 // Implementing swagger UI
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));

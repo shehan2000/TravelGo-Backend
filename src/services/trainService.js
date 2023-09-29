@@ -57,14 +57,17 @@ const getAllScheduleService = async () => {
 };
 
 const getTrainStopsService = async (page, pageSize, sort, search) => {
-  console.log("🚀 ~ file: trainService.js:60 ~ getTrainStopsService ~ search:", search)
+  console.log(
+    "🚀 ~ file: trainService.js:60 ~ getTrainStopsService ~ search:",
+    search
+  );
   let sql = `SELECT * FROM "TrainStop" `;
 
-    if (search) {
-        sql += `WHERE
+  if (search) {
+    sql += `WHERE
                     CAST("stopID" AS TEXT) LIKE '%${search}%'
-                    OR CAST("TrainNo" AS TEXT) LIKE '%${search}%'`
-    }
+                    OR CAST("TrainNo" AS TEXT) LIKE '%${search}%'`;
+  }
 
   if (sort.length > 2) {
     const sortParsed = JSON.parse(sort);
@@ -94,9 +97,9 @@ const getTrainStopsTotalService = async () => {
 
 const getWagonTypesService = async () => {
   return await DbHandler.executeSingleQuery(
-    'SELECT "WagonID", "Capacity", "Class" FROM "Wagon";'
+    'SELECT "WagonID", "Capacity", "Class", "Amenities", "HasTables", "Description" FROM "Wagon";'
   );
-}
+};
 
 const getBookingAggregateDataByMonthService = async () => {
   return await DbHandler.executeSingleQuery(
@@ -122,7 +125,7 @@ const getBookingAggregateDataByMonthService = async () => {
   FROM
       MonthlyData`
   );
-}
+};
 
 const getBookingAggregateDataByDayService = async () => {
   return await DbHandler.executeSingleQuery(
@@ -146,7 +149,209 @@ const getBookingAggregateDataByDayService = async () => {
       ) AS "daily_data"
   FROM
       DailyData`
+  );
+};
+
+const getTrainFrequencyService = async () => {
+  return await DbHandler.executeSingleQuery(
+    `SELECT "Name", "FrequencyID" from "Frequency";`
+  );
+};
+
+const createTrainScheduleService = async (
+  trainNo,
+  trainName,
+  source,
+  dest,
+  arrivalTime,
+  departureTime,
+  trainType,
+  frequency,
+  defaultWagonsWithDirection,
+  invertedStations
+) => {
+  console.log(
+    "🚀 ~ file: trainService.js:173 ~ defaultWagonsWithDirection:",
+    defaultWagonsWithDirection
+  );
+  // Convert the defaultWagonsWithDirection array to a PostgreSQL array format
+  const defaultWagonsArray = defaultWagonsWithDirection
+    .map((item) => `{${item.join(",")}}`)
+    .join(",");
+
+  var query = `INSERT INTO "TrainSchedule" ("TrainNo", "TrainName", "Source", "Destination", "ArrivalTime", "DepartureTime", 
+              "TrainType", "Frequency", "DefaultWagonsWithDirection", "InvertedStations") 
+              VALUES (${trainNo}, '${trainName}', ${source}, ${dest}, '${getTimeFormat(
+    arrivalTime
+  )}', '${getTimeFormat(departureTime)}',
+               '${trainType}', ${frequency},'{${defaultWagonsArray}}', '{${invertedStations}}') returning*`;
+
+  console.log("train schedule create query: ", query);
+
+  return await DbHandler.executeSingleQuery(query);
+};
+
+const getTimeFormat = (dateInput) => {
+  //making arrivalTime and departureTime into usable format for DB
+  const dateConverted = new Date(dateInput);
+
+  // Extract the hours, minutes, and seconds from the Date object
+  const hours = dateConverted.getHours();
+  const minutes = dateConverted.getMinutes();
+  const seconds = dateConverted.getSeconds();
+
+  // Format the time as "HH:MM:SS" string
+  const formattedArrivalTime = `${hours.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+
+  return formattedArrivalTime;
+};
+
+const getStatBoxDataService = async () => {
+  const totalUsers = await DbHandler.executeSingleQuery(
+    `SELECT COUNT(*) AS "total_users" FROM "User"`
+  );
+
+  const newUsersThisMonth = await DbHandler.executeSingleQuery(
+    `SELECT
+    SUM(CASE WHEN DATE_TRUNC('month', "TimeStamp") = DATE_TRUNC('month', CURRENT_DATE) THEN 1 ELSE 0 END) AS "new_users_current_month"
+    FROM
+        "User"
+    WHERE
+        DATE_PART('year', "TimeStamp") = DATE_PART('year', CURRENT_DATE);`
+  );
+
+  const todaySales = await DbHandler.executeSingleQuery(
+    `SELECT SUM("Amount") AS "TotalSales"
+    FROM "Booking"
+    WHERE DATE("BookedTime") = CURRENT_DATE;`
+  );
+
+  const yesterdaySales = await DbHandler.executeSingleQuery(
+    `SELECT SUM("Amount") AS "TotalSales"
+    FROM "Booking"
+    WHERE DATE("BookedTime") = CURRENT_DATE - INTERVAL '1 day';`
   )
+
+  const salesDayGain = (( (todaySales[0].TotalSales - yesterdaySales[0].TotalSales)/yesterdaySales[0].TotalSales ) * 100).toFixed(2);
+
+  // const monthlySales = await DbHandler.executeSingleQuery(
+  //   `SELECT SUM("Amount") AS "TotalSales"
+  //   FROM "Booking"
+  //   WHERE EXTRACT(MONTH FROM "BookedTime") = EXTRACT(MONTH FROM CURRENT_DATE)
+  //     AND EXTRACT(YEAR FROM "BookedTime") = EXTRACT(YEAR FROM CURRENT_DATE);`
+  // );
+
+  // const previousMonthSales = await DbHandler.executeSingleQuery(
+  //   `SELECT SUM("Amount") AS "TotalSales"
+  //   FROM "Booking"
+  //   WHERE EXTRACT(MONTH FROM "BookedTime") = EXTRACT(MONTH FROM (CURRENT_DATE - INTERVAL '1 month'))
+  //     AND EXTRACT(YEAR FROM "BookedTime") = EXTRACT(YEAR FROM (CURRENT_DATE - INTERVAL '1 month'));`
+  // )
+
+  
+
+  const sales = await DbHandler.executeSingleQuery(
+    `SELECT
+    ROUND(SUM(CASE
+        WHEN EXTRACT(MONTH FROM "BookedTime") = EXTRACT(MONTH FROM CURRENT_DATE)
+             AND EXTRACT(YEAR FROM "BookedTime") = EXTRACT(YEAR FROM CURRENT_DATE)
+        THEN "Amount"::NUMERIC
+        ELSE 0
+    END), 2) AS "TotalSalesCurrentMonth",
+    
+    ROUND(SUM(CASE
+        WHEN EXTRACT(YEAR FROM "BookedTime") = EXTRACT(YEAR FROM CURRENT_DATE)
+        THEN "Amount"::NUMERIC
+        ELSE 0
+    END), 2) AS "TotalSalesCurrentYear"
+FROM "Booking";`
+  )
+
+  const prevSales = await DbHandler.executeSingleQuery(
+    `SELECT
+    ROUND(SUM(CASE
+        WHEN EXTRACT(MONTH FROM "BookedTime") = EXTRACT(MONTH FROM CURRENT_DATE - INTERVAL '1 month')
+             AND EXTRACT(YEAR FROM "BookedTime") = EXTRACT(YEAR FROM CURRENT_DATE - INTERVAL '1 month')
+        THEN "Amount"::NUMERIC
+        ELSE 0
+    END), 2) AS "TotalSalesPreviousMonth",
+    
+    ROUND(SUM(CASE
+        WHEN EXTRACT(YEAR FROM "BookedTime") = EXTRACT(YEAR FROM CURRENT_DATE - INTERVAL '1 year')
+        THEN "Amount"::NUMERIC
+        ELSE 0
+    END), 2) AS "TotalSalesPreviousYear"
+FROM "Booking";
+`
+  )
+const salesMonthlyGain = (((sales[0].TotalSalesCurrentMonth - prevSales[0].TotalSalesPreviousMonth)/prevSales[0].TotalSalesPreviousMonth)*100).toFixed(2);
+const salesYearlyGain = (((sales[0].TotalSalesCurrentYear - prevSales[0].TotalSalesPreviousYear)/prevSales[0].TotalSalesPreviousYear)*100).toFixed(2);
+
+const bookings = await DbHandler.executeSingleQuery(
+  `SELECT
+    b."BookingID",
+	  t."TrainNo",
+    ts."TrainName",
+    b."Amount",
+    TO_CHAR(DATE(DATE_TRUNC('DAY', b."BookedTime")), 'YYYY-MM-DD') AS "BookingDate",
+
+	ss."StationName" AS "Source",
+	sd."StationName" AS "Destination"
+FROM
+    "Booking" b
+JOIN
+    "Train" t ON b."TrainID" = t."TrainID"
+JOIN
+    "TrainSchedule" ts ON t."TrainNo" = ts."TrainNo"
+JOIN
+	"Station" ss ON ss."StationID" = b."Source"
+JOIN
+	"Station" sd ON sd."StationID" = b."Destination";`
+)
+
+
+  return {
+    ...totalUsers[0],
+    ...newUsersThisMonth[0],
+    ...todaySales[0],
+    salesDayGain: salesDayGain,
+    ...sales[0],
+    salesMonthlyGain: salesMonthlyGain,
+    salesYearlyGain: salesYearlyGain,
+    bookings: bookings
+
+  };
+};
+
+const deleteTrainScheduleService = async (TrainNo) => {
+  return ( await DbHandler.executeSingleQuery(
+    `DELETE FROM "TrainSchedule"
+    WHERE "TrainNo" = ${TrainNo};
+     `
+  ))
+}
+
+
+const createWagonService = async (
+  Capacity,
+  Class,
+  SeatNoScheme,
+  Description,
+  HasTables,
+  Amenities
+) => {
+
+  // Replace square brackets with curly brackets
+  const AmenitiesFormatted = `{ ${Amenities.map(item => `"${item}"`).join(', ')} }`;
+
+  const query = `INSERT INTO "Wagon" ("Capacity", "Class", "SeatNoScheme", "Description", "HasTables", "Amenities" )
+  VALUES (${Capacity}, '${Class}', '${SeatNoScheme}', '${Description}', '${HasTables}', '${AmenitiesFormatted}') returning*;`;
+  console.log(query);
+  return (await DbHandler.executeSingleQuery(
+      query
+  ))
 }
 
 export {
@@ -158,4 +363,9 @@ export {
   getWagonTypesService,
   getBookingAggregateDataByMonthService,
   getBookingAggregateDataByDayService,
+  getTrainFrequencyService,
+  createTrainScheduleService,
+  getStatBoxDataService,
+  deleteTrainScheduleService,
+  createWagonService,
 };

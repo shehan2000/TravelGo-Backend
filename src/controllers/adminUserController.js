@@ -1,5 +1,5 @@
 import AsyncHandler from "express-async-handler";
-import generateToken from "../utils/generateToken.js";
+import { generateTokenAdmin} from "../utils/generateToken.js";
 import { getAdminByEmail, insertAdmin } from "../services/adminUserService.js";
 import { comparePasswordHash, generatePasswordHash } from "../services/userService.js";
 
@@ -12,7 +12,7 @@ const authAdmin = AsyncHandler( async (req, res) => {
     admin = admin[0];
 
     if(admin && password !== undefined && (await comparePasswordHash(password, admin.PasswordHash))) {
-        generateToken(res, admin.Username);
+        generateTokenAdmin(res, admin.Username);
 
         res.status(201).json({
             userId: admin.UserID,
@@ -58,7 +58,7 @@ const registerAdmin = AsyncHandler( async (req, res) => {
 });
 
 const logoutAdmin = AsyncHandler( async (req, res) => {
-    res.cookie('jwt', '', {
+    res.cookie('jwt_admin', '', {
         httpOnly: true,
         expires: new Date(0)
     })
