@@ -10,6 +10,9 @@ import {
   getBookingAggregateDataByDayService,
   getTrainFrequencyService,
   createTrainScheduleService,
+  getStatBoxDataService,
+  deleteTrainScheduleService,
+  createWagonService,
 } from "../services/trainService.js";
 
 const getStations = asyncHandler(async (req, res) => {
@@ -93,6 +96,42 @@ const createTrainSchedule = asyncHandler(async (req, res) => {
       )
     );
 });
+
+const getStatBoxData = asyncHandler( async (req, res) => {
+  res.status(200).json(
+    await getStatBoxDataService()
+  )
+});
+
+const deleteTrainSchedule = asyncHandler( async (req, res) => {
+  const TrainNo = req.query.TrainNo;
+  console.log("🚀 ~ file: trainController.js:107 ~ deleteTrainSchedule ~ TrainNo:", TrainNo)
+  res.status(200).json(
+    await deleteTrainScheduleService(TrainNo)
+  )
+})
+
+const createWagon = asyncHandler ( async (req, res) => {
+  const {
+    Capacity,
+    Class,
+    SeatNoScheme,
+    Description,
+    HasTables,
+    Amenities
+  } = req.body;
+
+  res.status(200).json(
+    await createWagonService(
+      Capacity,
+      Class,
+      SeatNoScheme,
+      Description,
+      HasTables,
+      Amenities
+    )
+  )
+})
 export {
   getStations,
   getSchedule,
@@ -103,4 +142,7 @@ export {
   getBookingAggregateDataByDay,
   getTrainFrequency,
   createTrainSchedule,
+  getStatBoxData,
+  deleteTrainSchedule,
+  createWagon,
 };

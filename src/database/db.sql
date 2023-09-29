@@ -10,7 +10,8 @@ CREATE TABLE "User" (
     "NIC" VARCHAR(15),
     "Address" VARCHAR(255),
     "PasswordHash" VARCHAR(255),
-    "EmailConfirmed" BOOLEAN DEFAULT false
+    "EmailConfirmed" BOOLEAN DEFAULT false,
+    "TimeStamp" timestamp DEFAULT current_timestamp
 );
 
 CREATE TABLE "Station" (

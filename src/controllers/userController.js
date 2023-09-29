@@ -1,6 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import { getUserByEmail, insertUser, generatePasswordHash, comparePasswordHash } from '../services/userService.js';
-import generateToken from '../utils/generateToken.js';
+import {generateToken} from '../utils/generateToken.js';
 
 /**
  * @swagger
