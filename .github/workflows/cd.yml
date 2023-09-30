@@ -1,0 +1,21 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+    
+jobs:
+
+  build:
+
+    runs-on: self-hosted
+
+    steps:
+      - name: Pull Docker Image
+        run: sudo docker pull movinsilva/travelgo-backend:latest
+      - name: Stop current system
+        run: docker compose down || true
+      - name: Run Docker compose file
+        run: docker compose up -d
