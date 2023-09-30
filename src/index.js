@@ -30,6 +30,7 @@ const allowedOrigins = [
     "http://localhost:5173",
     "http://localhost:3000"
 ]
+// Allowed all origins
 app.use(cors({
     origin: '*'
 }))
