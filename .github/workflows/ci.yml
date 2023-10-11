@@ -20,6 +20,6 @@ jobs:
     - name: Build the compose
       run: docker compose build
     - name: Building docker image
-      run: docker build travelgobackend-server -t movinsilva/travelgo-backend:latest
+      run: docker build . -t movinsilva/travelgo-backend:latest
     - name: Push to Dockerhub
       run: docker push movinsilva/travelgo-backend:latest
