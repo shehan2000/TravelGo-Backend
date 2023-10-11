@@ -24,7 +24,7 @@ class DbHandler {
     static executeSingleQuery = async (query, args) => {
       const pool = this.getPool();
       const result = await pool.query(query, args);
-      console.warn("DB QUERY: ", query, args);
+      console.log("DB QUERY: ", query, args);
       return result.rows;
     };
 

@@ -122,3 +122,13 @@ CREATE TABLE "AdminUser" (
     "LastName" VARCHAR(255),
     "PasswordHash" VARCHAR(255),
 );
+
+
+--Pricing tables..
+
+CREATE TABLE "TrainLine" (
+    "LineID" SERIAL PRIMARY KEY,
+    "LineName" VARCHAR(255),
+    "StartStationID" INTEGER REFERENCES "Station"("StationID"),
+    "EndStationID" INTEGER REFERENCES "Station"("StationID")
+)
