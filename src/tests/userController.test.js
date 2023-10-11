@@ -52,7 +52,6 @@ describe("User Controller", () => {
         })
 
 
-
         // it('should return a 400 status code for invalid credentials', async () => {
         //     // Mock getUserByEmail function (user not found)
         //     getUserByEmail.mockResolvedValue([]);
