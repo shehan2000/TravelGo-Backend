@@ -13,6 +13,7 @@ import {
   getStatBoxData,
   deleteTrainSchedule,
   createWagon,
+  createFrequency,
 } from "../controllers/trainController.js";
 import { protectAdmin } from "../middleware/authMiddleware.js";
 
@@ -34,5 +35,10 @@ router.route("/admin/stat-box-data").get(protectAdmin, getStatBoxData);
 router.route("/admin/delete-train-schedule").delete(protectAdmin, deleteTrainSchedule);
 
 router.route("/admin/create-wagon").post(protectAdmin, createWagon);
+router.route("/admin/create-frequency").post(protectAdmin, createFrequency);
+
+
+
+
 
 export default router;
