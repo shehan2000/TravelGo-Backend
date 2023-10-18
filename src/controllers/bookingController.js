@@ -1,5 +1,5 @@
 import asyncHandler from "express-async-handler";
-import { insertBookingService } from "../services/bookingService.js";
+import { insertBookingService, getBookingPriceService } from "../services/bookingService.js";
 
 const insertBooking = asyncHandler( async (req, res) => {
     const {
@@ -23,6 +23,13 @@ const insertBooking = asyncHandler( async (req, res) => {
     ))
 })
 
+
+const getBookingPrice = asyncHandler ( async (req, res) => {
+    res.status(200).json(await getBookingPriceService())
+  })
+
+
 export {
-    insertBooking
+    insertBooking,
+    getBookingPrice
 }

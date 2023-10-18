@@ -15,6 +15,31 @@ const insertBookingService = async (
     return ( await DbHandler.executeSingleQuery(query));
 }
 
+const getBookingPriceService = async () => {
+    const query = `SELECT
+    bp.*,
+    ss."StationName" AS "SourceStationName",
+    sd."StationName" AS "DestinationStationName"
+  FROM
+    "BookingPrice" bp
+  JOIN
+    "Station" ss ON bp."SourceID" = ss."StationID"
+  JOIN
+    "Station" sd ON bp."DestinationID" = sd."StationID";`
+    return (await DbHandler.executeSingleQuery(query))
+  }
+
+  const getSeats = async (
+    trainNo,
+    date,
+    source,
+    destination
+  ) => {
+
+  }
+
+
 export {
-    insertBookingService
+    insertBookingService,
+    getBookingPriceService,
 }

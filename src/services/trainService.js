@@ -8,12 +8,13 @@ const getScheduleService = async (sourceID, destID, day) => {
   const dayString = '"' + day + '"';
   console.log(dayString);
 
-  var query = `SELECT
+  var query1 = `SELECT
     ts."TrainNo",
     ts."TrainName",
     ts."ArrivalTime",
     ts."DepartureTime",
     ts."TrainType",
+    ts."DefaultWagonsWithDirection",
     f."Name" AS "FrequencyName",
     ts."Frequency",
     ts."InvertedStations",
@@ -49,7 +50,62 @@ WHERE
 ORDER BY
     ts."TrainNo";`;
 
-  return await DbHandler.executeSingleQuery(query);
+  const res = await DbHandler.executeSingleQuery(query1);
+
+  for (let index = 0; index < res.length; index++) {
+    //Adding a load array for the train
+    const query2 = `SELECT array_agg("Load"::integer) AS "LoadArray"
+      FROM (
+          SELECT "Load"
+          FROM "TrainStop"
+          WHERE "TrainNo" = ${res[index].TrainNo}
+          ORDER BY "ArrivalTime"
+      ) AS sorted_stops;`;
+
+    const load = await DbHandler.executeSingleQuery(query2);
+
+    res[index].load = load[0].LoadArray;
+
+    /* FINDING CLASS NAMES OF WAGONS IN THE TRAIN */
+
+    // Taking distinct wagonID s
+    const distinctElements = [];
+const seen = new Map();
+
+
+for (const nestedArray of res[index].DefaultWagonsWithDirection) {
+  const firstElement = nestedArray[0];
+  if (seen.has(firstElement)) {
+    // If we've seen this element before, increment its count
+    seen.set(firstElement, seen.get(firstElement) + 1);
+  } else {
+    // If it's the first time, set the count to 1
+    seen.set(firstElement, 1);
+    distinctElements.push(firstElement);
+  }
+}
+console.log("🚀 ~ file: trainService.js:74 ~ getScheduleService ~ seen:", seen)
+
+    
+    // Changing the array to a usable string in sql. Ex: [1,2] --> "(1,2)"
+  const distinctString = `(${distinctElements.join(', ')})`;
+console.log("🚀 ~ file: trainService.js:90 ~ getScheduleService ~ distinctString:", distinctString)
+    const query3 = `SELECT "Class", "Capacity", "WagonID" FROM "Wagon" WHERE "WagonID" IN ${distinctString}; `;
+    const classes = await DbHandler.executeSingleQuery(query3);
+    console.log("🚀 ~ file: trainService.js:95 ~ getScheduleService ~ classes:", classes)
+
+    // add new field called count to each object in the returned array which is the count of that class.
+    const result = classes.map(item => {
+      const count = seen.get(item.WagonID);
+      return { ...item, count };
+    });
+    res[index].classes = result;
+
+    
+  }
+
+
+  return res;
 };
 
 const getAllScheduleService = async () => {
@@ -232,9 +288,13 @@ const getStatBoxDataService = async () => {
     `SELECT SUM("Amount") AS "TotalSales"
     FROM "Booking"
     WHERE DATE("BookedTime") = CURRENT_DATE - INTERVAL '1 day';`
-  )
+  );
 
-  const salesDayGain = (( (todaySales[0].TotalSales - yesterdaySales[0].TotalSales)/yesterdaySales[0].TotalSales ) * 100).toFixed(2);
+  const salesDayGain = (
+    ((todaySales[0].TotalSales - yesterdaySales[0].TotalSales) /
+      yesterdaySales[0].TotalSales) *
+    100
+  ).toFixed(2);
 
   // const monthlySales = await DbHandler.executeSingleQuery(
   //   `SELECT SUM("Amount") AS "TotalSales"
@@ -249,8 +309,6 @@ const getStatBoxDataService = async () => {
   //   WHERE EXTRACT(MONTH FROM "BookedTime") = EXTRACT(MONTH FROM (CURRENT_DATE - INTERVAL '1 month'))
   //     AND EXTRACT(YEAR FROM "BookedTime") = EXTRACT(YEAR FROM (CURRENT_DATE - INTERVAL '1 month'));`
   // )
-
-  
 
   const sales = await DbHandler.executeSingleQuery(
     `SELECT
@@ -267,7 +325,7 @@ const getStatBoxDataService = async () => {
         ELSE 0
     END), 2) AS "TotalSalesCurrentYear"
 FROM "Booking";`
-  )
+  );
 
   const prevSales = await DbHandler.executeSingleQuery(
     `SELECT
@@ -285,12 +343,20 @@ FROM "Booking";`
     END), 2) AS "TotalSalesPreviousYear"
 FROM "Booking";
 `
-  )
-const salesMonthlyGain = (((sales[0].TotalSalesCurrentMonth - prevSales[0].TotalSalesPreviousMonth)/prevSales[0].TotalSalesPreviousMonth)*100).toFixed(2);
-const salesYearlyGain = (((sales[0].TotalSalesCurrentYear - prevSales[0].TotalSalesPreviousYear)/prevSales[0].TotalSalesPreviousYear)*100).toFixed(2);
+  );
+  const salesMonthlyGain = (
+    ((sales[0].TotalSalesCurrentMonth - prevSales[0].TotalSalesPreviousMonth) /
+      prevSales[0].TotalSalesPreviousMonth) *
+    100
+  ).toFixed(2);
+  const salesYearlyGain = (
+    ((sales[0].TotalSalesCurrentYear - prevSales[0].TotalSalesPreviousYear) /
+      prevSales[0].TotalSalesPreviousYear) *
+    100
+  ).toFixed(2);
 
-const bookings = await DbHandler.executeSingleQuery(
-  `SELECT
+  const bookings = await DbHandler.executeSingleQuery(
+    `SELECT
     b."BookingID",
 	  t."TrainNo",
     ts."TrainName",
@@ -309,8 +375,7 @@ JOIN
 	"Station" ss ON ss."StationID" = b."Source"
 JOIN
 	"Station" sd ON sd."StationID" = b."Destination";`
-)
-
+  );
 
   return {
     ...totalUsers[0],
@@ -320,19 +385,17 @@ JOIN
     ...sales[0],
     salesMonthlyGain: salesMonthlyGain,
     salesYearlyGain: salesYearlyGain,
-    bookings: bookings
-
+    bookings: bookings,
   };
 };
 
 const deleteTrainScheduleService = async (TrainNo) => {
-  return ( await DbHandler.executeSingleQuery(
+  return await DbHandler.executeSingleQuery(
     `DELETE FROM "TrainSchedule"
     WHERE "TrainNo" = ${TrainNo};
      `
-  ))
-}
-
+  );
+};
 
 const createWagonService = async (
   Capacity,
@@ -342,17 +405,33 @@ const createWagonService = async (
   HasTables,
   Amenities
 ) => {
-
   // Replace square brackets with curly brackets
-  const AmenitiesFormatted = `{ ${Amenities.map(item => `"${item}"`).join(', ')} }`;
+  const AmenitiesFormatted = `{ ${Amenities.map((item) => `"${item}"`).join(
+    ", "
+  )} }`;
 
   const query = `INSERT INTO "Wagon" ("Capacity", "Class", "SeatNoScheme", "Description", "HasTables", "Amenities" )
   VALUES (${Capacity}, '${Class}', '${SeatNoScheme}', '${Description}', '${HasTables}', '${AmenitiesFormatted}') returning*;`;
   console.log(query);
-  return (await DbHandler.executeSingleQuery(
-      query
-  ))
-}
+  return await DbHandler.executeSingleQuery(query);
+};
+
+const createFrequencyService = async (
+  frequencyName,
+  monday,
+  tuesday,
+  wednesday,
+  thursday,
+  friday,
+  saturday,
+  sunday
+) => {
+  const query = `INSERT INTO "Frequency" ("Name", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+  VALUES ('${frequencyName}', '${monday}', '${tuesday}', '${wednesday}', '${thursday}', '${friday}', '${saturday}', '${sunday}')`;
+
+  console.log(query);
+  return await DbHandler.executeSingleQuery(query);
+};
 
 export {
   getStationsService,
@@ -368,4 +447,5 @@ export {
   getStatBoxDataService,
   deleteTrainScheduleService,
   createWagonService,
+  createFrequencyService,
 };
