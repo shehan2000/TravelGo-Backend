@@ -1,4 +1,5 @@
 import DbHandler from "../database/dbHandler.js";
+import { getWagonTypesService } from "./trainService.js";
 
 const insertBookingService = async (
     userID,
@@ -78,18 +79,48 @@ const getBookingPriceService = async () => {
     
   }
 
-  const getSeats = async (
+  const getSeatsService = async (
     trainNo,
     date,
-    source,
-    destination
+    startStation,
+    endStation
   ) => {
+    const wagonTypes = await DbHandler.executeSingleQuery(`SELECT * FROM "Wagon"`);
 
+    // Source station distance < booking table's destination station distance
+      // and
+      // Destination distance > booking table's source station distance
+      // The seats booked under this condition are the real booked ones for given source and destination
+
+      const seatQuery = `SELECT "SeatBooking".*
+      FROM "Booking"
+      JOIN "Station" ON "Booking"."Source" = "Station"."StationID"
+      JOIN "Station" as "s" ON "Booking"."Destination" = "s"."StationID"
+      JOIN "SeatBooking" ON "Booking"."BookingID" = "SeatBooking"."BookingID"
+      WHERE "Booking"."TrainID" = (
+          SELECT "TrainID" 
+          FROM "Train" 
+          WHERE "TrainNo" = ${trainNo} AND "Date" = '${date}'
+      ) 
+      AND CASE
+          WHEN (SELECT "Distance" FROM "Station" WHERE "StationID" = ${startStation}) < (SELECT "Distance" FROM "Station" WHERE "StationID" = ${endStation})
+          THEN "Station"."Distance" < (SELECT "Distance" FROM "Station" WHERE "StationID" = ${endStation}) 
+          AND "s"."Distance" > (SELECT "Distance" FROM "Station" WHERE "StationID" = ${startStation})
+          
+          ELSE "Station"."Distance" > (SELECT "Distance" FROM "Station" WHERE "StationID" = ${endStation})
+          AND "s"."Distance" < (SELECT "Distance" FROM "Station" WHERE "StationID" = ${startStation})
+      END;`
+
+      const seats = await DbHandler.executeSingleQuery(seatQuery);
+
+      return {"WagonTypes": wagonTypes,
+              "BookedSeats": seats}
   }
 
 
 export {
     insertBookingService,
     getBookingPriceService,
-    getBookingDetailsService
+    getBookingDetailsService,
+    getSeatsService
 }

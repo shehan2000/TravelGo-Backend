@@ -3,6 +3,7 @@ import {
   insertBookingService,
   getBookingPriceService,
   getBookingDetailsService,
+  getSeatsService,
 } from "../services/bookingService.js";
 
 const insertBooking = asyncHandler(async (req, res) => {
@@ -47,4 +48,12 @@ const getBookingDetails = asyncHandler(async (req, res) => {
     );
 });
 
-export { insertBooking, getBookingPrice, getBookingDetails };
+const getSeats = asyncHandler(async (req, res) => {
+  const { trainNo, date, startStation, endStation } = req.body;
+
+  res
+    .status(200)
+    .json(await getSeatsService(trainNo, date, startStation, endStation));
+});
+
+export { insertBooking, getBookingPrice, getBookingDetails, getSeats };
